@@ -1,0 +1,14 @@
+schema: '2.0'
+stages:
+  get_data:
+    cmd: python src/get_data.py
+    deps:
+    - path: src/get_data.py
+      hash: md5
+      md5: a59dfe24005faa2360267e3841efea13
+      size: 334
+    outs:
+    - path: data/customer_churn.csv
+      hash: md5
+      md5: 7f07de26b054de4c36eed95a1277fe21
+      size: 978285
