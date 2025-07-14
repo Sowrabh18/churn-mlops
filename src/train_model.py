@@ -8,6 +8,11 @@ import joblib
 import os
 import yaml
 
+
+import mlflow
+mlflow.set_tracking_uri("file:./mlruns")  # Force local tracking path
+mlflow.set_experiment("churn-prediction")
+
 # Load values from params.yaml
 with open("params.yaml", "r") as f:
     params = yaml.safe_load(f)
