@@ -10,5 +10,10 @@ stages:
     deps:
     - data/customer_churn.csv
     - src/train_model.py
+    params:
+    - split.random_state
+    - split.test_size
+    - train.C
+    - train.max_iter
     outs:
     - models/model.pkl

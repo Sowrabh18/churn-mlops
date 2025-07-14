@@ -1,0 +1,7 @@
+split:
+  test_size: 0.2
+  random_state: 42
+
+train:
+  C: 1.0
+  max_iter: 100
