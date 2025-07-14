@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/ASUS/OneDrive/Desktop/mlops/churn-mlops/mlruns/665053064554512431/b5968540c3b846c29dba13df959ee30b/artifacts
+end_time: 1752504994361
+entry_point_name: ''
+experiment_id: '665053064554512431'
+lifecycle_stage: active
+run_id: b5968540c3b846c29dba13df959ee30b
+run_name: selective-swan-601
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752504994318
+status: 4
+tags: []
+user_id: ASUS

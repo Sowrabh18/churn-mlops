@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/ASUS/OneDrive/Desktop/mlops/churn-mlops/mlruns/665053064554512431/70630b3837ec4a58964302f675e314a3/artifacts
+end_time: 1752500369139
+entry_point_name: ''
+experiment_id: '665053064554512431'
+lifecycle_stage: active
+run_id: 70630b3837ec4a58964302f675e314a3
+run_name: aged-bee-483
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752500361474
+status: 3
+tags: []
+user_id: ASUS

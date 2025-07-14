@@ -1,0 +1,6 @@
+artifact_location: file:///C:/Users/ASUS/OneDrive/Desktop/mlops/churn-mlops/mlruns/665053064554512431
+creation_time: 1752500359959
+experiment_id: '665053064554512431'
+last_update_time: 1752500359959
+lifecycle_stage: active
+name: churn-prediction
