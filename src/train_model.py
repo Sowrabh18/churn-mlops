@@ -8,12 +8,11 @@ import joblib
 import os
 import yaml
 
-
-import mlflow
-mlflow.set_tracking_uri("file:./mlruns")  # Force local tracking path
+# MLflow setup
+mlflow.set_tracking_uri("file:./mlruns")
 mlflow.set_experiment("churn-prediction")
 
-# Load values from params.yaml
+# Load parameters
 with open("params.yaml", "r") as f:
     params = yaml.safe_load(f)
 
@@ -22,51 +21,41 @@ random_state = params["split"]["random_state"]
 C = params["train"]["C"]
 max_iter = params["train"]["max_iter"]
 
-
-# Load data
+# Load and preprocess data
 df = pd.read_csv("data/customer_churn.csv")
-
-# Preprocess: drop customerID (not useful)
 df.drop("customerID", axis=1, inplace=True)
-
-# Convert categorical to numerical
 df = pd.get_dummies(df)
 
-# Split
 X = df.drop("Churn_Yes", axis=1)
 y = df["Churn_Yes"]
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
-# Model
+# Train model
 model = LogisticRegression(C=C, max_iter=max_iter)
 model.fit(X_train, y_train)
 
-# Evaluation
+# Evaluate
 y_pred = model.predict(X_test)
 acc = accuracy_score(y_test, y_pred)
 prec = precision_score(y_test, y_pred)
 rec = recall_score(y_test, y_pred)
 f1 = f1_score(y_test, y_pred)
 
-# MLflow Tracking
-mlflow.set_experiment("churn-prediction")
-
+# Log everything
 with mlflow.start_run():
     mlflow.log_param("model_type", "LogisticRegression")
     mlflow.log_param("random_state", random_state)
     mlflow.log_param("test_size", test_size)
-    mlflow.log_param("max_iter", 1000)
+    mlflow.log_param("C", C)
+    mlflow.log_param("max_iter", max_iter)
 
     mlflow.log_metric("accuracy", acc)
     mlflow.log_metric("precision", prec)
     mlflow.log_metric("recall", rec)
     mlflow.log_metric("f1_score", f1)
 
-    # Save model
     os.makedirs("models", exist_ok=True)
-    model_path = "models/model.pkl"
-    joblib.dump(model, model_path)
+    joblib.dump(model, "models/model.pkl")
 
     mlflow.sklearn.log_model(model, artifact_path="model", registered_model_name="logistic_churn_model")
 
