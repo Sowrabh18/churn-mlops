@@ -17,3 +17,5 @@ stages:
     - train.max_iter
     outs:
     - models/model.pkl
+    - mlruns/:
+        cache: false  # Prevent DVC from caching mlruns/
