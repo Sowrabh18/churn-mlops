@@ -8,7 +8,11 @@ import joblib
 import os
 import yaml
 
-# Load values from params.yaml
+# Debug
+print(f"Environment: GITHUB_ACTIONS={os.environ.get('GITHUB_ACTIONS')}")
+print(f"MLFLOW_TRACKING_URI={os.environ.get('MLFLOW_TRACKING_URI')}")
+
+# Load params
 with open("params.yaml", "r") as f:
     params = yaml.safe_load(f)
 
@@ -19,17 +23,12 @@ max_iter = params["train"]["max_iter"]
 
 # Load data
 df = pd.read_csv("data/customer_churn.csv")
-
-# Preprocess: drop customerID
 df.drop("customerID", axis=1, inplace=True)
-
-# Convert categorical to numerical
 df = pd.get_dummies(df)
 
 # Split data
 X = df.drop("Churn_Yes", axis=1)
 y = df["Churn_Yes"]
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
 # Train model
@@ -45,31 +44,32 @@ f1 = f1_score(y_test, y_pred)
 
 # Save model
 os.makedirs("models", exist_ok=True)
-model_path = "models/model.pkl"
-joblib.dump(model, model_path)
+joblib.dump(model, "models/model.pkl")
 
-# MLflow logging (runs in both local and CI)
+# MLflow logging
+print("Setting MLflow tracking URI")
 mlflow.set_tracking_uri("file:./mlruns")
+print("Setting MLflow experiment")
 mlflow.set_experiment("churn-prediction")
-
-# Set a unique run name for CI
 run_name = os.environ.get("GITHUB_RUN_ID", "local-run") if os.environ.get("GITHUB_ACTIONS") else "local-run"
+print(f"Starting MLflow run: {run_name}")
 
 with mlflow.start_run(run_name=run_name):
+    print("Logging parameters and metrics")
     mlflow.log_param("model_type", "LogisticRegression")
     mlflow.log_param("random_state", random_state)
     mlflow.log_param("test_size", test_size)
     mlflow.log_param("max_iter", max_iter)
     mlflow.log_param("C", C)
-
     mlflow.log_metric("accuracy", acc)
     mlflow.log_metric("precision", prec)
     mlflow.log_metric("recall", rec)
     mlflow.log_metric("f1_score", f1)
-
+    print("Logging model")
     mlflow.sklearn.log_model(
-        model,
+        sk_model=model,
         artifact_path="model",
-        registered_model_name="logistic_churn_model"
+        registered_model_name="logistic_churn_model",
+        input_example=X_test.iloc[:1]
     )
     print("✅ MLflow logging complete.")
