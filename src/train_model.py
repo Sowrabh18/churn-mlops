@@ -48,30 +48,28 @@ os.makedirs("models", exist_ok=True)
 model_path = "models/model.pkl"
 joblib.dump(model, model_path)
 
-# Check if running in GitHub Actions
-in_ci = os.environ.get("GITHUB_ACTIONS", "") == "true"
+# MLflow logging (runs in both local and CI)
+mlflow.set_tracking_uri("file:./mlruns")
+mlflow.set_experiment("churn-prediction")
 
-if not in_ci:
-    mlflow.set_tracking_uri("file:./mlruns")
-    mlflow.set_experiment("churn-prediction")
+# Set a unique run name for CI
+run_name = os.environ.get("GITHUB_RUN_ID", "local-run") if os.environ.get("GITHUB_ACTIONS") else "local-run"
 
-    with mlflow.start_run():
-        mlflow.log_param("model_type", "LogisticRegression")
-        mlflow.log_param("random_state", random_state)
-        mlflow.log_param("test_size", test_size)
-        mlflow.log_param("max_iter", max_iter)
+with mlflow.start_run(run_name=run_name):
+    mlflow.log_param("model_type", "LogisticRegression")
+    mlflow.log_param("random_state", random_state)
+    mlflow.log_param("test_size", test_size)
+    mlflow.log_param("max_iter", max_iter)
+    mlflow.log_param("C", C)  # Added missing parameter
 
-        mlflow.log_metric("accuracy", acc)
-        mlflow.log_metric("precision", prec)
-        mlflow.log_metric("recall", rec)
-        mlflow.log_metric("f1_score", f1)
+    mlflow.log_metric("accuracy", acc)
+    mlflow.log_metric("precision", prec)
+    mlflow.log_metric("recall", rec)
+    mlflow.log_metric("f1_score", f1)
 
-        mlflow.sklearn.log_model(
-            model,
-            artifact_path="model",
-            registered_model_name="logistic_churn_model"
-        )
-        print("✅ MLflow logging complete.")
-else:
-    print("📦 Running in CI — skipping MLflow logging.")
-
+    mlflow.sklearn.log_model(
+        model,
+        artifact_path="model",
+        registered_model_name="logistic_churn_model"
+    )
+    print("✅ MLflow logging complete.")
