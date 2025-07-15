@@ -1,7 +1,6 @@
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-from mlflow.tracking import MlflowClient
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -9,13 +8,7 @@ import joblib
 import os
 import yaml
 
-# ─────────────────────────────────────
-# 🛠️ Debug Environment
-print(f"Environment: GITHUB_ACTIONS={os.environ.get('GITHUB_ACTIONS')}")
-print(f"MLFLOW_TRACKING_URI={os.environ.get('MLFLOW_TRACKING_URI')}")
-
-# ─────────────────────────────────────
-# 📦 Load params from YAML
+# 🛠️ Load parameters
 with open("params.yaml", "r") as f:
     params = yaml.safe_load(f)
 
@@ -24,24 +17,18 @@ random_state = params["split"]["random_state"]
 C = params["train"]["C"]
 max_iter = params["train"]["max_iter"]
 
-# ─────────────────────────────────────
-# 📊 Load and preprocess dataset
+# 📊 Load and preprocess data
 df = pd.read_csv("data/customer_churn.csv")
 df.drop("customerID", axis=1, inplace=True)
 df = pd.get_dummies(df)
 X = df.drop("Churn_Yes", axis=1)
 y = df["Churn_Yes"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=test_size, random_state=random_state
-)
-
-# ─────────────────────────────────────
 # 🧠 Train model
 model = LogisticRegression(C=C, max_iter=max_iter)
 model.fit(X_train, y_train)
 
-# ─────────────────────────────────────
 # 📈 Evaluate
 y_pred = model.predict(X_test)
 acc = accuracy_score(y_test, y_pred)
@@ -49,33 +36,16 @@ prec = precision_score(y_test, y_pred)
 rec = recall_score(y_test, y_pred)
 f1 = f1_score(y_test, y_pred)
 
-# ─────────────────────────────────────
-# 💾 Save model locally
+# 💾 Save model
 os.makedirs("models", exist_ok=True)
 joblib.dump(model, "models/model.pkl")
 
-# ─────────────────────────────────────
-# 🚀 MLflow Logging Setup
+# 🚀 MLflow Logging
+mlflow.set_tracking_uri("file:mlruns")  # Let MLflow manage this folder
+mlflow.set_experiment("churn-prediction")  # Auto-creates experiment and meta.yaml
 
-# Set tracking URI to local folder inside GitHub workspace
-tracking_path = os.getenv("GITHUB_WORKSPACE", "./mlruns")
-mlflow.set_tracking_uri(f"file:{tracking_path}")
-
-# Ensure experiment exists
-experiment_name = "churn-prediction"
-client = MlflowClient()
-if not client.get_experiment_by_name(experiment_name):
-    client.create_experiment(experiment_name)
-mlflow.set_experiment(experiment_name)
-
-# End previous run if lingering
-if mlflow.active_run():
-    mlflow.end_run()
-
-# Get run name from GitHub context
 run_name = os.getenv("GITHUB_RUN_ID", "local-run")
 
-# Start MLflow run
 with mlflow.start_run(run_name=run_name):
     mlflow.set_tag("ci", "github-actions")
     mlflow.set_tag("workflow", os.getenv("GITHUB_WORKFLOW", "unknown"))
@@ -99,4 +69,4 @@ with mlflow.start_run(run_name=run_name):
         input_example=X_test.iloc[:1]
     )
 
-    print("✅ MLflow run logged successfully.")
+print("✅ MLflow run logged successfully.")

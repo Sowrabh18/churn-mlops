@@ -10,7 +10,7 @@ jobs:
   run-mlops:
     runs-on: ubuntu-latest
     env:
-      MLFLOW_TRACKING_URI: file:./mlruns
+      MLFLOW_TRACKING_URI: file:mlruns
       GITHUB_ACTIONS: true
       GITHUB_RUN_ID: ${{ github.run_id }}
       GITHUB_WORKFLOW: ${{ github.workflow }}
@@ -31,8 +31,8 @@ jobs:
         pip install -r requirements.txt
         pip install dvc dvc-gdrive
 
-    - name: Create mlruns directory
-      run: mkdir -p mlruns && chmod -R 777 mlruns
+    - name: Clean mlruns folder
+      run: rm -rf mlruns
 
     - name: Run DVC pipeline
       run: dvc repro
