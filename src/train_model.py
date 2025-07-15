@@ -8,7 +8,7 @@ import joblib
 import os
 import yaml
 
-# 🛠️ Load parameters
+# Load parameters
 with open("params.yaml", "r") as f:
     params = yaml.safe_load(f)
 
@@ -17,7 +17,7 @@ random_state = params["split"]["random_state"]
 C = params["train"]["C"]
 max_iter = params["train"]["max_iter"]
 
-# 📊 Load and preprocess data
+# Load and preprocess data
 df = pd.read_csv("data/customer_churn.csv")
 df.drop("customerID", axis=1, inplace=True)
 df = pd.get_dummies(df)
@@ -25,22 +25,22 @@ X = df.drop("Churn_Yes", axis=1)
 y = df["Churn_Yes"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
 
-# 🧠 Train model
+# Train model
 model = LogisticRegression(C=C, max_iter=max_iter)
 model.fit(X_train, y_train)
 
-# 📈 Evaluate
+# Evaluate
 y_pred = model.predict(X_test)
 acc = accuracy_score(y_test, y_pred)
 prec = precision_score(y_test, y_pred)
 rec = recall_score(y_test, y_pred)
 f1 = f1_score(y_test, y_pred)
 
-# 💾 Save model
+# Save model
 os.makedirs("models", exist_ok=True)
 joblib.dump(model, "models/model.pkl")
 
-# 🚀 MLflow Logging
+# MLflow logging
 mlflow.set_tracking_uri("file:mlruns")  # Let MLflow manage this folder
 mlflow.set_experiment("churn-prediction")  # Auto-creates experiment and meta.yaml
 
