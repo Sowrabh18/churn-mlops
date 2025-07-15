@@ -41,32 +41,35 @@ os.makedirs("models", exist_ok=True)
 joblib.dump(model, "models/model.pkl")
 
 # MLflow logging
-mlflow.set_tracking_uri("file:mlruns")  # Let MLflow manage this folder
-mlflow.set_experiment("churn-prediction")  # Auto-creates experiment and meta.yaml
+mlflow.set_tracking_uri("file:mlruns")
+mlflow.set_experiment("churn-prediction")
 
 run_name = os.getenv("GITHUB_RUN_ID", "local-run")
 
-with mlflow.start_run(run_name=run_name):
-    mlflow.set_tag("ci", "github-actions")
-    mlflow.set_tag("workflow", os.getenv("GITHUB_WORKFLOW", "unknown"))
-    mlflow.set_tag("job", os.getenv("GITHUB_JOB", "unknown"))
+try:
+    with mlflow.start_run(run_name=run_name):
+        mlflow.set_tag("ci", "github-actions")
+        mlflow.set_tag("workflow", os.getenv("GITHUB_WORKFLOW", "unknown"))
+        mlflow.set_tag("job", os.getenv("GITHUB_JOB", "unknown"))
 
-    mlflow.log_param("model_type", "LogisticRegression")
-    mlflow.log_param("random_state", random_state)
-    mlflow.log_param("test_size", test_size)
-    mlflow.log_param("max_iter", max_iter)
-    mlflow.log_param("C", C)
+        mlflow.log_param("model_type", "LogisticRegression")
+        mlflow.log_param("random_state", random_state)
+        mlflow.log_param("test_size", test_size)
+        mlflow.log_param("max_iter", max_iter)
+        mlflow.log_param("C", C)
 
-    mlflow.log_metric("accuracy", acc)
-    mlflow.log_metric("precision", prec)
-    mlflow.log_metric("recall", rec)
-    mlflow.log_metric("f1_score", f1)
+        mlflow.log_metric("accuracy", acc)
+        mlflow.log_metric("precision", prec)
+        mlflow.log_metric("recall", rec)
+        mlflow.log_metric("f1_score", f1)
 
-    mlflow.sklearn.log_model(
-        sk_model=model,
-        artifact_path="model",
-        registered_model_name="logistic_churn_model",
-        input_example=X_test.iloc[:1]
-    )
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="model",
+            registered_model_name=None,
+            input_example=X_test.iloc[:1]
+        )
 
-print("✅ MLflow run logged successfully.")
+    print("✅ MLflow run logged successfully.")
+except Exception as e:
+    print(f"❌ MLflow logging failed: {e}")
