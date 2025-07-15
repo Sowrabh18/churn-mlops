@@ -2,20 +2,19 @@ stages:
   get_data:
     cmd: python src/get_data.py
     deps:
-    - src/get_data.py
+      - src/get_data.py
     outs:
-    - data/customer_churn.csv
+      - data/customer_churn.csv
+
   train_model:
     cmd: python src/train_model.py
     deps:
-    - data/customer_churn.csv
-    - src/train_model.py
+      - src/train_model.py
+      - data/customer_churn.csv
     params:
-    - split.random_state
-    - split.test_size
-    - train.C
-    - train.max_iter
+      - split.test_size
+      - split.random_state
+      - train.C
+      - train.max_iter
     outs:
-    - models/model.pkl
-    - mlruns/:
-        cache: false  # Prevent DVC from caching mlruns/
+      - models/model.pkl

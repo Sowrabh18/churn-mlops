@@ -1,20 +1,21 @@
-name: Run DVC Pipeline
+name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
-  dvc-run:
+  run-mlops:
     runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: file:./mlruns
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0  # Ensure full history for DVC
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,31 +24,10 @@ jobs:
 
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install dvc[s3] mlflow scikit-learn pandas pyyaml joblib
-        pip show mlflow  # Print MLflow version for debugging
+        pip install dvc dvc-gdrive
 
-    - name: Debug directory and files
-      run: |
-        pwd
-        ls -la
-        ls -la data/ || echo "data/ directory not found"
-        ls -la models/ || echo "models/ directory not found"
-        ls -la mlruns/ || echo "mlruns/ directory not found"
+    - name: Run DVC pipeline
+      run: dvc repro
 
-    - name: Reproduce pipeline with DVC
-      run: |
-        dvc repro
-
-    - name: Display pipeline status
-      run: |
-        dvc status
-
-    - name: Archive MLflow artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: mlflow-artifacts
-        path: |
-          mlruns/
-          models/
-        retention-days: 7
