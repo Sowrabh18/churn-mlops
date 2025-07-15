@@ -60,7 +60,7 @@ with mlflow.start_run(run_name=run_name):
     mlflow.log_param("random_state", random_state)
     mlflow.log_param("test_size", test_size)
     mlflow.log_param("max_iter", max_iter)
-    mlflow.log_param("C", C)  # Added missing parameter
+    mlflow.log_param("C", C)
 
     mlflow.log_metric("accuracy", acc)
     mlflow.log_metric("precision", prec)
